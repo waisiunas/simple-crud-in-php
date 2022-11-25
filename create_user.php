@@ -2,25 +2,38 @@
 
 <?php
 
-$name = $email = $error = $success = '';
+$error = $success = $name = $email = '';
 
 if (isset($_POST['submit'])) {
     $name = htmlspecialchars($_POST['name']);
     $email = htmlspecialchars($_POST['email']);
+    $password = htmlspecialchars($_POST['password']);
 
     if (empty($name)) {
-        $error = 'Provide your name!';
+        $error = 'Please provie your name';
     } elseif (empty($email)) {
-        $error = 'Provide your email!';
+        $error = 'Please provie your email';
+    } elseif (empty($password)) {
+        $error = 'Please provie your password';
     } else {
-        $sql = "INSERT INTO `users`(`name`, `email`) VALUES ('${name}', '${email}')";
-        if ($conn->query($sql)) {
-            $success = 'User has been successfully added!';
+
+        $sql = "SELECT * FROM `users` WHERE `email` = '$email'";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows == 0) {
+            $new_password = md5($password);
+            $sql = "INSERT INTO `users`(`name`, `email`, `password`) VALUES ('$name','$email','$new_password')";
+            if ($conn->query($sql)) {
+                $success = 'User has been succefully added!';
+            } else {
+                $error = 'User has failed to add!';
+            }
         } else {
-            $error = 'User has failed to add!';
+            $error = 'E-mail already exist!';
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -31,34 +44,40 @@ if (isset($_POST['submit'])) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create User</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="../bootstrap/css/style.css">
 </head>
 
 <body>
-
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-6 mx-auto">
                 <div class="card">
+                    <div class="card-header text-end">
+                        <a href="./show_users.php" class="btn btn-outline-secondary">Back</a>
+                    </div>
                     <div class="card-body">
-                        <div class="text-danger"><?php echo $error; ?></div>
-                        <div class="text-success"><?php echo $success; ?></div>
                         <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
+                            <div class="text-danger"><?php echo $error; ?></div>
+                            <div class="text-success"><?php echo $success; ?></div>
+
                             <div class="mb-2">
                                 <label for="name">Name</label>
-                                <input type="name" class="form-control" id="name" name="name" placeholder="Enter the name" value="<?php echo $name; ?>">
-                            </div>
-                            <div class="mb-2">
-                                <label for="email">E-mail</label>
-                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter the email" value="<?php echo $email; ?>">
+                                <input type="text" name="name" id="name" class="form-control" placeholder="Enter your name!" value="<?php echo $name; ?>">
                             </div>
 
                             <div class="mb-2">
-                                <input type="submit" class="btn btn-primary" value="Submit" name="submit">
+                                <label for="email">Email</label>
+                                <input type="email" name="email" id="email" class="form-control" placeholder="Enter your Email!" value="<?php echo $email; ?>">
                             </div>
-                            <hr>
-                            <div class="d-grid">
-                                <a href="./index.php" class="btn btn-dark">Back</a>
+
+                            <div class="mb-2">
+                                <label for="password">Password</label>
+                                <input type="password" name="password" id="password" class="form-control" placeholder="Enter your Password!">
+                            </div>
+
+                            <div>
+                                <input type="submit" name="submit" class="btn btn-primary">
+                                <input type="reset" class="btn btn-dark">
                             </div>
                         </form>
                     </div>
@@ -66,8 +85,7 @@ if (isset($_POST['submit'])) {
             </div>
         </div>
     </div>
-
 </body>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="../bootstrap/js/app.js"></script>
 
 </html>
